@@ -18,19 +18,16 @@ void main()
 	std::cout << "To complete the work enter #" << std::endl << std::endl;
 
 	calcul cal;
-	if (cal.validation())
+	cal.validation();
+	std::cout << "Enter the expression: ";
+	char c;
+	while (c = std::cin.peek())
 	{
-		std::cout << "Enter the expression: ";
-		char c;
-		while (c = std::cin.peek())
-		{
-			if (c == '#') break;//interrupting the recording cycle
-			cal.readthread();
-			cal.maths();
-			std::cin.ignore();//extracting a scanned character for a common expression from a stream
-			std::cout << std::endl << "Enter the expression: ";
-		}
+		if (c == '#') break;//interrupting the recording cycle
+		cal.readthread();
+		cal.maths();
+		std::cin.ignore();//extracting a scanned character for a common expression from a stream
+		std::cout << std::endl << "Enter the expression: ";
 	}
-
 
 }

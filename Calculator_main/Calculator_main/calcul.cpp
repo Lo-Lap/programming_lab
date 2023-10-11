@@ -50,7 +50,7 @@ calcul::calcul()
 		});
 }
 
-bool calcul::validation()
+void calcul::validation()
 {
 	//exception handling
 	try
@@ -60,9 +60,7 @@ bool calcul::validation()
 	catch (std::exception)
 	{
 		std::cout << "Error in dll" << std::endl;
-		return false;
 	}
-	return true;
 }
 
 template <typename T>//template, because we have two stacks of different types
@@ -79,75 +77,96 @@ void calcul::readthread()
 	char c;
 	while (c = std::cin.peek())
 	{
-		std::string s;
-		std::stringstream ss;
-		ss << c;
-		ss >> s;
 		if (c == '\n') break;
 		if (c == ' ')
 		{
 			std::cin.ignore();
 			continue;
 		};
-		if (((c >= '0') && (c <= '9')) || check_neg(s))//number 0 to 9 + negative number check
+		if (((c >= '0') && (c <= '9')) || check_neg(c))//number 0 to 9 + negative number check
 		{
-			double value;
-			std::cin >> value;//extracting a number from the stream
-			number.push(value);
+			is_number(c);
 			continue;
 		}
-		if ((c == '+') || (c == '-') || (c == '/') || (c == '*') || (c == '(') || (c == '^'))
+		if ((c == '+') || (c == '-') || (c == '/') || (c == '*') || (c == '(') || (c == '^'))//checking if the function is standard
 		{
-			processing_oper(s);
-			if ((number.size() != 0) || (operation.size() != 0)) std::cin.ignore();//extracting the viewed symbol from the stream
+			is_standart(c);
 			continue;
 		}
-		if ((c == 'c') || (c == 'l') || (c == 's') || (c == 't') || (c == 'r') || (c == 'a'))
+		if ((c == 'c') || (c == 'l') || (c == 's') || (c == 't') || (c == 'r') || (c == 'a'))//checking whether the function is non-standard (determines the first character of a non-standard operation and reads it before the opening parenthesis,
+			// if a non-standard function was read, it will be found out later when checking)
 		{
-			std::string nstand;
-			while (c != '(') {
-				nstand.push_back(c);
-				std::cin.ignore();
-				c = std::cin.peek();
-				if ((c == ')') || (c == '\n')) break;//the expression was entered incorrectly
-			}
-			if ((c == ')') || (c == '\n'))
-			{
-				deleteStacksEr();
-				break;
-			}
-			operation.push(nstand);
+			if (!is_nonstandart(c)) break;
 			continue;
 		}
 		if (c == ')')
 		{
-			while (operation.top() != "(")//we perform operations in parentheses
-			{
-				if (function.find(operation.top()) != function.end())
-				{
-					oper();
-					if (operation.size() == 0) break;//if there was a division by 0, then the stacks became empty and it is necessary to stop the cycle
-					continue;
-				}
-				expr_incor();
-				break;
-			}
-			if (number.size() != 0) std::cin.ignore();//extracting the scanned symbol from the stream, provided that there was no stack clearing due to an incorrect expression
-			if (operation.size() != 0)
-			{
-				operation.pop();//if there was no division by zero, then the opening bracket remains in the stack and it must be removed from the stack
-				if (nonstandart() == -1)//checking that a non-standard function is valid
-				{
-					deleteStacksEr();
-					break;
-				}
-			}
+			if (!is_brecket(c)) break;
 			continue;
 		}
 		//caught an incorrect character
 		deleteStacksEr();
 		break;
 	}
+}
+
+
+void calcul::is_number(char c)
+{
+	double value;
+	std::cin >> value;//extracting a number from the stream
+	number.push(value);
+}
+void calcul::is_standart(char c)
+{
+	std::string s;
+	std::stringstream ss;
+	ss << c;
+	ss >> s;
+	processing_oper(s);
+	if ((number.size() != 0) || (operation.size() != 0)) std::cin.ignore();//extracting the viewed symbol from the stream
+}
+bool calcul::is_nonstandart(char c)
+{
+	std::string nstand;
+	while (c != '(') {
+		nstand.push_back(c);
+		std::cin.ignore();
+		c = std::cin.peek();
+		if ((c == ')') || (c == '\n')) break;//the expression was entered incorrectly
+	}
+	if ((c == ')') || (c == '\n'))
+	{
+		deleteStacksEr();
+		return false;
+	}
+	operation.push(nstand);
+	return true;
+}
+bool calcul::is_brecket(char c)
+{
+	while (operation.top() != "(")//we perform operations in parentheses
+	{
+		if (function.find(operation.top()) != function.end())
+		{
+			oper();
+			if (operation.size() == 0) break;//if there was a division by 0, then the stacks became empty and it is necessary to stop the cycle
+			continue;
+		}
+		expr_incor();
+		break;
+	}
+	if (number.size() != 0) std::cin.ignore();//extracting the scanned symbol from the stream, provided that there was no stack clearing due to an incorrect expression
+	if (operation.size() != 0)
+	{
+		operation.pop();//if there was no division by zero, then the opening bracket remains in the stack and it must be removed from the stack
+		if (nonstandart() == -1)//checking that a non-standard function is valid
+		{
+			deleteStacksEr();
+			return false;
+		}
+	}
+	return true;
 }
 
 void calcul::expr_incor()
@@ -185,9 +204,9 @@ void calcul::processing_oper(std::string c)//processing of the received options
 	return;
 }
 
-bool calcul::check_neg(std::string c)//processing negative numbers if it is the first number in the expression or comes after the opening parenthesis
+bool calcul::check_neg(char c)//processing negative numbers if it is the first number in the expression or comes after the opening parenthesis
 {
-	if (c == "-")
+	if (c == '-')
 	{
 		if (number.size() == 0)
 			return true;
@@ -224,14 +243,17 @@ void calcul::maths()//to process all raw operations with numbers
 
 int calcul::nonstandart()
 {
-	if (dll.is_plugin(operation.top()))
+	if (!operation.empty())
 	{
-		double a = number.top();
-		number.pop();
-		if (!dll.calculation(operation.top(), a)) return -1;
-		number.push(a);
-		operation.pop();
-		return 1;
+		if (dll.is_plugin(operation.top()))
+		{
+			double a = number.top();
+			number.pop();
+			if (!dll.calculation(operation.top(), a)) return -1;
+			number.push(a);
+			operation.pop();
+			return 1;
+		}
 	}
 	return 0;
 }

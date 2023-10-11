@@ -22,7 +22,11 @@ private:
     std::map <std::string, int> oper_priority;//mathematical operations priorities
     std::map <std::string, std::function<void(double, double)>> function;//correlation of a mathematical operation and what it does
     dll_read dll;
-    bool check_neg(std::string c);//checking whether the number is negative
+    bool check_neg(char c);//checking whether the number is negative
+    void is_number(char c);//checking whether a number is
+    void is_standart(char c);//checking whether it is a standard operation
+    bool is_nonstandart(char c);//checking whether it is a non-standard operation
+    bool is_brecket(char c);//checking whether the bracket is closing
     void oper();//processing of a single mathematical operation
     int nonstandart();//working with non-standard functions
     void deleteStacksEr();//clearing stacks if an error occurred when evaluating an expression (exception handling)
@@ -33,7 +37,7 @@ private:
 
 public:
     calcul();
-    bool validation();//checking exceptions from dynamic libraries
+    void validation();//checking exceptions from dynamic libraries
     void readthread();//reading an expression from a stream
     void maths();//perform mathematical operations and is responsible for the output of the result to the console
     ~calcul();
