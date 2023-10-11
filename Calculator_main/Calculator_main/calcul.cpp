@@ -93,7 +93,7 @@ void calcul::readthread()
 			is_standart(c);
 			continue;
 		}
-		if ((c == 'c') || (c == 'l') || (c == 's') || (c == 't') || (c == 'r') || (c == 'a'))//checking whether the function is non-standard (determines the first character of a non-standard operation and reads it before the opening parenthesis,
+		if (isalpha(c))//checking whether the function is non-standard (determines the first character of a non-standard operation and reads it before the opening parenthesis,
 			// if a non-standard function was read, it will be found out later when checking)
 		{
 			if (!is_nonstandart(c)) break;
@@ -130,6 +130,7 @@ bool calcul::is_nonstandart(char c)
 {
 	std::string nstand;
 	while (c != '(') {
+		if (std::isupper(c)) c=(char)std::tolower(c);
 		nstand.push_back(c);
 		std::cin.ignore();
 		c = std::cin.peek();

@@ -10,7 +10,7 @@
 #include <map>
 #include <limits>
 #include <ios> 
-
+#include <ctype.h>
 #include "dll_read.h"
 
 
